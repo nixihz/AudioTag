@@ -1,0 +1,22 @@
+.venv/
+__pycache__/
+.pytest_cache/
+*.egg-info/
+output/
+.DS_Store
+.build/
+.swiftpm/
+dist/
+
+# 本地服务数据可能包含密钥，不随源码分发。
+data/
+.env
+.env.*
+!.env.example
+*.key
+*.p8
+*.p12
+*.pfx
+
+# 技能链接指向本机个人目录，其他机器无法复用。
+.agents/

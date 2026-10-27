@@ -1,0 +1,15 @@
+name: mp3tag
+title: AudioTag
+title_i18n:
+  zh: AudioTag 音频标签工作台
+  en: AudioTag
+description: 本地音频标签编辑、MP4 转 MP3 与 macOS 签名更新入口。
+type: frontend
+version: 1.0.0
+route: /x/mp3tag
+entry: .
+access: public
+logo: assets/icon.png
+categories: [音乐]
+runtime:
+  type: static

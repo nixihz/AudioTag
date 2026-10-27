@@ -1,0 +1,16 @@
+{
+  "operation": "extract",
+  "input": "/path/Beneath the Metal Sky.mp4",
+  "output": "/path/Beneath the Metal Sky.mp3",
+  "first_frame": true,
+  "bitrate": 320,
+  "metadata": {
+    "title": "Beneath the Metal Sky",
+    "artist": "Silent Horizon",
+    "album": "Concrete Horizons",
+    "genre": "Alternative Rock / Nu-Metal",
+    "year": "2024",
+    "track": "1/1",
+    "bpm": "95"
+  }
+}

@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f6f4f0">
+  <title>开源组件与源码 · AudioTag</title>
+  <link rel="icon" href="../assets/icon.png">
+  <link rel="stylesheet" href="../styles.css">
+  <style>
+    .source-main{max-width:820px;padding-block:60px 80px}
+    .source-main h1{font-size:42px}.source-main h2{font-size:26px;margin-top:40px}
+    .source-main p,.source-main li{color:var(--muted);font-size:14px}
+    .source-main a{color:var(--accent);text-decoration:underline;text-underline-offset:4px}
+    .source-main li{padding-block:6px}.source-main pre{white-space:pre-wrap;overflow-wrap:anywhere;background:var(--surface);border:1px solid var(--line);padding:20px;font:12px/1.8 Menlo,monospace}
+  </style>
+</head>
+<body>
+  <header class="header shell"><a class="brand" href="../"><img src="../assets/icon.png" width="42" height="42" alt=""><span>AudioTag</span></a></header>
+  <main class="shell source-main">
+    <p class="section-number">THIRD-PARTY SOFTWARE</p>
+    <h1>开源组件与源码</h1>
+    <p>AudioTag 包含以下第三方组件。各组件遵循各自的许可；许可证副本也保存在应用包的 <code>Contents/Resources/Licenses</code> 中。第三方商标及著作权归各自所有者。</p>
+    <h2>媒体工具</h2>
+    <ul>
+      <li>FFmpeg 9.0.2：<a href="FFmpeg-LGPL-2.1.txt">LGPL 2.1 许可证</a>、<a href="FFmpeg-LICENSE.md">构建许可说明</a>、<a href="ffmpeg-9.0.2.tar.xz">对应完整源码</a>。未启用 GPL / nonfree 扩展。</li>
+      <li>LAME 4.0：<a href="LAME-LGPL.txt">LGPL 许可证</a>、<a href="lame-4.0.tar.gz">对应完整源码</a>。作为独立动态库提供，已关闭可选的 mpg123 解码器。</li>
+      <li><a href="BUILD-NOTICES.txt">实际 FFmpeg 配置</a>、<a href="build_release_tools.sh">构建脚本</a>、<a href="bundle_tools.py">动态库打包脚本</a>。这些工具通过子进程使用，不链接进 SwiftUI 客户端。</li>
+    </ul>
+    <p>构建需在 Apple Silicon Mac 上安装 Xcode Command Line Tools、make、pkg-config、nasm 与 Python。将两个源码包放入 <code>.build/release-tools/</code>，将脚本放入 <code>script/</code>，创建 Python 虚拟环境 <code>.venv</code>，然后执行：</p>
+    <pre>bash script/build_release_tools.sh</pre>
+    <p>脚本校验原始源码 SHA-256，输出 FFmpeg / FFprobe 与可替换的 LAME 动态库；源码没有额外补丁。可修改或重新构建这些 LGPL 工具以供调试，但修改应用包后原 Developer ID 签名将失效，需要按你的本机流程重新签名，不得冒用发行者身份。</p>
+    <h2>标签、图像与运行时</h2>
+    <ul>
+      <li>Mutagen 1.48.1：<a href="mutagen-1.48.1-LICENSE.txt">GPL 2 许可证</a>、<a href="mutagen-1.48.1.tar.gz">对应完整源码</a>。项目声明 GPL 2 或更新版本。</li>
+      <li>Pillow 12.3.0：<a href="pillow-12.3.0-LICENSE.txt">Pillow 与随附图像库许可证</a>；上游源码见 <a href="https://pypi.org/project/pillow/12.3.0/#files">PyPI 发行文件</a>。</li>
+      <li>Python 3.13.5：<a href="Python-3.13.5-LICENSE.txt">Python 许可证</a>；上游源码见 <a href="https://www.python.org/downloads/release/python-3135/">Python 官方发行页</a>。</li>
+      <li>PyInstaller 6.22.3：<a href="pyinstaller-6.22.3-LICENSE.txt">许可证与引导程序例外</a>；上游源码见 <a href="https://pypi.org/project/pyinstaller/6.22.3/#files">PyPI 发行文件</a>。</li>
+    </ul>
+    <h2>自动更新</h2>
+    <p>Sparkle 2.10.0：<a href="Sparkle-LICENSE.txt">许可证与第三方声明</a>；源码见 <a href="https://github.com/sparkle-project/Sparkle/tree/2.10.0">Sparkle 官方仓库</a>。AudioTag 的更新签名私钥仅保存在发行者的本机钥匙串，不提供下载。</p>
+    <p><a href="../">返回官网</a></p>
+  </main>
+</body>
+</html>

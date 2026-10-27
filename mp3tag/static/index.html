@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AudioTag · 给音乐补上故事</title>
+  <link rel="stylesheet" href="/style.css">
+  <script src="/app.js" defer></script>
+</head>
+<body>
+  <header class="masthead"><a href="/" class="brand" aria-label="AudioTag 首页"><span class="brand-mark">a.</span> AudioTag</a><span class="local"><i></i> 只在你的电脑上处理</span></header>
+  <main>
+    <div class="intro"><div><h1>给音乐补上故事。</h1><p>一段信息，一张封面。让每首歌都有自己的名字。</p></div><span class="edition">THE TAGGING ROOM<br>本地音频标签编辑器</span></div>
+    <div class="workspace">
+      <aside class="source-column">
+        <div class="section-heading"><span class="number">01</span><h2>你的音频</h2><span id="file-count" class="muted">尚未选择</span></div>
+        <label class="dropzone" id="dropzone" for="audio-files"><svg viewBox="0 0 32 32" fill="none" aria-hidden="true"><path d="M20 5v17M20 5l7-2v16M20 11l7-2M20 22c0 2-2 4-4.5 4S11 25 11 23s2-4 4.5-4S20 20 20 22ZM27 19c0 2-2 4-4.5 4S18 22 18 20s2-4 4.5-4S27 17 27 19Z" stroke="currentColor" stroke-width="1.5"/></svg><strong>拖入音频，或点击选择</strong><span>MP3 · FLAC · M4A · OGG · OPUS · WAV</span><small>支持批量，每个文件最多 512 MB</small></label>
+        <input type="file" id="audio-files" class="visually-hidden" accept=".mp3,.flac,.m4a,.mp4,.ogg,.opus,.wav" multiple>
+        <ul id="file-list" class="file-list"></ul>
+        <audio id="player" controls hidden aria-label="试听当前音频"></audio>
+        <div class="section-heading cover-heading"><span class="number">02</span><h2>专辑封面</h2><span class="muted">可选</span></div>
+        <div class="cover-row"><label for="cover-file" class="cover-preview" id="cover-preview"><svg viewBox="0 0 80 80" aria-hidden="true"><circle cx="40" cy="40" r="30"/><circle cx="40" cy="40" r="21"/><circle cx="40" cy="40" r="8"/><circle cx="40" cy="40" r="2"/></svg><img id="cover-image" alt="专辑封面预览" hidden></label><div><h3 id="cover-title">让封面也归位</h3><p id="cover-description">JPEG 或 PNG，最多 20 MB。<br>未上传时保留原封面。</p><label for="cover-file" class="button secondary compact">选择封面</label><button id="remove-cover" class="text-button" hidden>取消替换</button></div></div>
+        <input type="file" id="cover-file" class="visually-hidden" accept="image/jpeg,image/png">
+        <div class="source-note"><span>原文件，安心保留。</span><p>仅更新标签，不重新编码音频。<br>导出新文件，原文件保持完整。</p></div>
+      </aside>
+      <section class="editor-column">
+        <div class="section-heading"><span class="number">03</span><h2>粘贴歌曲信息</h2><button id="example" class="text-button">试试示例</button></div>
+        <label class="visually-hidden" for="raw-text">中英文歌曲信息</label><textarea id="raw-text" class="raw-input" placeholder="歌曲名称 (Title)：Beneath the Metal Sky&#10;艺术家 / 歌手 (Artist)：Silent Horizon&#10;唱片集 / 专辑 (Album)：Concrete Horizons&#10;歌词 (Lyrics)：&#10;(Verse 1)&#10;…" spellcheck="false"></textarea>
+        <div class="parse-row"><span class="muted">支持中文 / 英文标签，多行歌词原样保留</span><button id="parse" class="button secondary">解析信息 <span aria-hidden="true">↗</span></button></div>
+        <div class="section-heading fields-heading"><span class="number">04</span><h2>检查并微调</h2><button id="deselect" class="text-button">取消全部勾选</button></div>
+        <p class="field-help">只写入勾选且非空的字段。已有标签会显示供你参考。</p>
+        <div id="fields" class="fields"></div>
+        <div id="warnings" class="warnings" hidden></div>
+        <footer class="export-bar"><div><strong id="summary">准备好，再写入。</strong><p id="export-note">选择音频，填写你想更新的标签。</p></div><button id="export" class="button primary" disabled>写入并导出 <span aria-hidden="true">↗</span></button></footer>
+        <div id="status" role="status" aria-live="polite"></div><a id="download" class="download" hidden>再次下载</a>
+      </section>
+    </div>
+  </main>
+  <footer class="page-footer"><span>音乐留在本地，故事写进文件。</span><span>标签 · 歌词 · 封面</span></footer>
+</body>
+</html>

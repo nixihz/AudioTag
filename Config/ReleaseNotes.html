@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="zh-CN">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AudioTag 1.0.0 发行说明</title>
+<style>
+body{max-width:720px;margin:48px auto;padding:0 24px;background:#f6f4f0;color:#302c28;font:15px/1.8 -apple-system,"PingFang SC",sans-serif}
+h1{color:#a7462d}a{color:#a7462d}code{overflow-wrap:anywhere}
+</style>
+<h1>AudioTag 1.0.0（1）</h1>
+<p>首次提供带 Sparkle 更新器的 Mac 发行版。</p>
+<ul>
+<li>陶土红原生工作台，集中整理音频标签、普通歌词和 JPEG / PNG 封面。</li>
+<li>识别中英文歌曲信息；最多批量处理 32 个文件，只更新选中且非空的字段。</li>
+<li>支持 MP4 转 MP3、选择音轨、使用视频首帧作为封面，以及 128 / 192 / 256 / 320 kbps 码率。</li>
+<li>始终导出新副本，拒绝覆盖已有文件。转 MP3 会重新编码，不能提高原始音质。</li>
+<li>内置 Python 标签引擎与 FFmpeg，无需另外安装 Python 或 Homebrew。</li>
+<li>应用菜单新增「检查更新…」，设置中可管理自动检查。更新包使用独立的 Ed25519 密钥签名。</li>
+</ul>
+<h2>安装与兼容性</h2>
+<p>适用于 Apple Silicon Mac，要求 macOS 26.0 或更高版本。不支持 Intel Mac。</p>
+<p>下载 ZIP 并解压，将 AudioTag.app 拖到「应用程序」。已有未配置更新器的开发版，需要手动安装此版本一次。</p>
+<h2>隐私与限制</h2>
+<p>歌曲信息、音频和封面在本机处理。Sparkle 检查与下载更新时会连接官网；不向官网上传媒体文件。软件不提供在线封面搜索、删除标签或同步歌词时间轴编辑。</p>
+<p><a href="../sources/">开源组件与源码</a> · <a href="../">返回官网</a></p>
+</html>
