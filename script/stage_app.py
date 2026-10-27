@@ -15,7 +15,11 @@ contents = app / "Contents"
 for directory in ["MacOS", "Resources", "Frameworks"]:
     (contents / directory).mkdir(parents=True, exist_ok=True)
 shutil.copy2(binary, contents / "MacOS/AudioTag")
-shutil.copy2(Path(os.environ.get("ENGINE_BINARY", str(root / "dist/mp3tag"))), contents / "Resources/mp3tag")
+engine = contents / "Resources/audiotag"
+legacy_engine = contents / "Resources/mp3tag"
+if legacy_engine.is_file() or legacy_engine.is_symlink():
+    legacy_engine.unlink()
+shutil.copy2(Path(os.environ.get("ENGINE_BINARY", str(root / "dist/audiotag"))), engine)
 shutil.copy2(root / "examples/beneath-the-metal-sky.txt", contents / "Resources/example.txt")
 subprocess.run(["ditto", os.environ.get("TOOLS_BUNDLE", str(root / "dist/tools")), str(contents / "Resources/tools")], check=True)
 framework = root / ".build/artifacts/sparkle/Sparkle/Sparkle.xcframework/macos-arm64_x86_64/Sparkle.framework"

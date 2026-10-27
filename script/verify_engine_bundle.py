@@ -7,7 +7,7 @@ import sys
 import tempfile
 
 resources = Path(sys.argv[1]).resolve() / "Contents/Resources"
-engine = resources / "mp3tag"
+engine = resources / "audiotag"
 ffmpeg = resources / "tools/ffmpeg"
 environment = {**os.environ, "PATH": "/usr/bin:/bin"}
 

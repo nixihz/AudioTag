@@ -12,7 +12,7 @@ public struct Engine: Sendable {
 
     public static func bundled() throws -> Engine {
         guard let resources = Bundle.main.resourceURL else { throw EngineError("无法找到应用资源") }
-        let url = resources.appendingPathComponent("mp3tag")
+        let url = resources.appendingPathComponent("audiotag")
         guard FileManager.default.isExecutableFile(atPath: url.path) else { throw EngineError("标签引擎缺失，请重新运行构建脚本") }
         return Engine(executableURL: url)
     }

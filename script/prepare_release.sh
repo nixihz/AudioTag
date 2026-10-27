@@ -12,9 +12,9 @@ node --test tests/site.test.cjs
 bash script/build_release_tools.sh
 swift build -c release
 .venv/bin/pyinstaller --noconfirm --clean --onefile --codesign-identity "$IDENTITY" \
-  --name mp3tag --distpath "$WORK/engine" --workpath "$WORK/python" \
+  --name audiotag --distpath "$WORK/engine" --workpath "$WORK/python" \
   --specpath "$WORK" --paths "$ROOT" script/engine_entry.py
-ENGINE_BINARY="$WORK/engine/mp3tag" TOOLS_BUNDLE="$ROOT/.build/release-tools/bundle-encoder-only" \
+ENGINE_BINARY="$WORK/engine/audiotag" TOOLS_BUNDLE="$ROOT/.build/release-tools/bundle-encoder-only" \
   python3 script/stage_app.py .build/release/AudioTag "$WORK/AudioTag.app" "$IDENTITY"
 python3 script/verify_engine_bundle.py "$WORK/AudioTag.app"
 ditto -c -k --sequesterRsrc --keepParent "$WORK/AudioTag.app" "$WORK/notary-submission.zip"

@@ -2,7 +2,7 @@
 
 ## AudioTag 更名
 
-产品对外名称统一为 AudioTag，原生构建输出 `dist/AudioTag.app`，新发行 ZIP 使用 `audiotag-<版本>-<构建号>.zip`。Bundle ID `com.brian.mp3tag`、Keychain account `mp3tag`、更新公钥、站点标识和域名暂时保留，避免改名改变更新身份或指向未配置的服务。内部 Python 包及 AI 引擎仍名为 `mp3tag`；源码安装新增 `audiotag` 命令，并保留旧命令。
+产品对外名称统一为 AudioTag，原生构建输出 `dist/AudioTag.app`，独立 AI CLI 使用 `audiotag`，新发行 ZIP 使用 `audiotag-<版本>-<构建号>.zip`。Bundle ID `com.brian.mp3tag`、Keychain account `mp3tag`、更新公钥、站点标识和域名暂时保留，避免改名改变更新身份或指向未配置的服务。内部 Python 包仍名为 `mp3tag`；源码安装和旧脚本继续保留 `mp3tag` 兼容命令。
 
 此次更名只更新项目源码与本地构建，不代表已完成公证或部署。已签名或公开的历史制品不得直接改写；下一次发行需重新构建、签名、公证并生成校验数据。
 

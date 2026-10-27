@@ -1,0 +1,68 @@
+version: '3'
+
+vars:
+  APP_BUNDLE: '{{.ROOT_DIR}}/dist/AudioTag.app'
+  CLI_BINARY: '{{.ROOT_DIR}}/dist/audiotag'
+  TOOLS_BUNDLE: '{{.ROOT_DIR}}/dist/tools'
+  INSTALL_APP: /Applications/AudioTag.app
+  INSTALL_BIN: /usr/local/bin/audiotag
+  LEGACY_INSTALL_BIN: /usr/local/bin/mp3tag
+  INSTALL_TOOLS: /usr/local/bin/tools
+
+tasks:
+  default:
+    desc: Build and install AudioTag for macOS
+    cmds:
+      - task: macos-install
+
+  macos-build:
+    desc: Build the macOS app, CLI binary, and bundled media tools
+    cmds:
+      - ./script/build_and_run.sh --build-only
+
+  macos-install-only:
+    desc: Install existing macOS build artifacts into /Applications and /usr/local/bin
+    cmds:
+      - |
+        set -euo pipefail
+
+        app_bundle='{{.APP_BUNDLE}}'
+        cli_binary='{{.CLI_BINARY}}'
+        tools_bundle='{{.TOOLS_BUNDLE}}'
+        install_app='{{.INSTALL_APP}}'
+        install_bin='{{.INSTALL_BIN}}'
+        legacy_install_bin='{{.LEGACY_INSTALL_BIN}}'
+        install_tools='{{.INSTALL_TOOLS}}'
+
+        for artifact in "$app_bundle" "$cli_binary" "$tools_bundle/ffmpeg" "$tools_bundle/ffprobe"; do
+          if [[ ! -e "$artifact" ]]; then
+            echo "缺少构建产物：$artifact，请先运行 task macos-build" >&2
+            exit 1
+          fi
+        done
+
+        rm -rf "$install_app"
+        /usr/bin/ditto --rsrc --extattr --acl "$app_bundle" "$install_app"
+
+        mkdir -p "$install_tools"
+        rm -rf "$install_tools"
+        /usr/bin/ditto --rsrc --extattr --acl "$tools_bundle" "$install_tools"
+        /usr/bin/ditto --rsrc --extattr --acl "$cli_binary" "$install_bin"
+        rm -rf "$legacy_install_bin"
+        ln -s "$(basename "$install_bin")" "$legacy_install_bin"
+        chmod 755 "$install_bin" "$install_tools/ffmpeg" "$install_tools/ffprobe"
+
+        /usr/bin/codesign --verify --deep --strict "$install_app"
+        /usr/bin/codesign --verify --deep --strict "$install_bin"
+        "$install_bin" capabilities >/dev/null
+
+        echo "已安装：$install_app"
+        echo "已安装：$install_bin"
+        echo "兼容别名：$legacy_install_bin"
+        echo "已安装：$install_tools"
+
+  macos-install:
+    desc: Build and install AudioTag for macOS
+    cmds:
+      - task: macos-build
+      - task: macos-install-only

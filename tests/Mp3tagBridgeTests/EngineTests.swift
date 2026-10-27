@@ -4,7 +4,7 @@ import XCTest
 
 final class EngineTests: XCTestCase {
     func testNativeBridgeUsesRealJSONEngine() async throws {
-        let path = ProcessInfo.processInfo.environment["MP3TAG_TEST_ENGINE"] ?? FileManager.default.currentDirectoryPath + "/dist/mp3tag"
+        let path = ProcessInfo.processInfo.environment["AUDIOTAG_TEST_ENGINE"] ?? ProcessInfo.processInfo.environment["MP3TAG_TEST_ENGINE"] ?? FileManager.default.currentDirectoryPath + "/dist/audiotag"
         guard FileManager.default.isExecutableFile(atPath: path) else { throw XCTSkip("请先运行构建脚本生成引擎") }
         let engine = Engine(executableURL: URL(fileURLWithPath: path))
         let request = try JSONSerialization.data(withJSONObject: ["operation": "parse", "text": "歌曲名称 (Title)：原生桥接验证\n音轨编号：1 / 2\n歌词：\n第一行\n\n第二行"])
@@ -18,7 +18,7 @@ final class EngineTests: XCTestCase {
         XCTAssertEqual(metadata["lyrics"], "第一行\n\n第二行")
     }
     func testNativeBridgeReturnsStructuredFailure() async throws {
-        let path = ProcessInfo.processInfo.environment["MP3TAG_TEST_ENGINE"] ?? FileManager.default.currentDirectoryPath + "/dist/mp3tag"
+        let path = ProcessInfo.processInfo.environment["AUDIOTAG_TEST_ENGINE"] ?? ProcessInfo.processInfo.environment["MP3TAG_TEST_ENGINE"] ?? FileManager.default.currentDirectoryPath + "/dist/audiotag"
         guard FileManager.default.isExecutableFile(atPath: path) else { throw XCTSkip("请先构建引擎") }
         let engine = Engine(executableURL: URL(fileURLWithPath: path))
         let request = try JSONSerialization.data(withJSONObject: ["operation": "inspect", "input": "/nonexistent/audio.mp3"])

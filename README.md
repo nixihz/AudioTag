@@ -2,13 +2,13 @@
 
 本地音频标签工具。粘贴中文或英文歌曲信息，写入标题、歌手、专辑、流派、年份、音轨、BPM、歌词和封面。支持 MP3、FLAC、M4A/MP4（音频）、OGG Vorbis、Opus、WAV。
 
-项目原名 Mp3tag，现更名为 AudioTag，避免名称被理解为只支持 MP3。原生应用为 `AudioTag.app`，源码安装后使用 `audiotag` 命令；旧的 `mp3tag` 命令继续可用。内部 Python 包、AI 引擎文件名、Bundle ID、更新签名身份和现有站点地址暂时保留，不影响已有集成。
+项目原名 Mp3tag，现更名为 AudioTag，避免名称被理解为只支持 MP3。原生应用为 `AudioTag.app`，源码安装和独立二进制 CLI 均使用 `audiotag` 命令；旧的 `mp3tag` 命令继续可用作兼容别名。内部 Python 包、Bundle ID、更新签名身份和现有站点地址暂时保留，不影响已有集成。
 
 ## SwiftUI macOS 应用与 AI 二进制
 
 当前推荐使用 `dist/AudioTag.app`：双击打开 SwiftUI 原生应用。选择或拖入文件，粘贴歌曲信息并解析，然后检查勾选字段、选择封面与导出目录。MP4 默认转成 MP3，默认使用第一个视频帧作为前封面；自选图片优先于首帧。单文件有多音轨时可指定流编号，批量使用每个文件的第一音轨。码率可选 128/192/256/320 kbps。
 
-应用与 AI 二进制都内置 Python 标签引擎；`dist/tools` 和应用资源内打包 FFmpeg、FFprobe 及其非系统动态库。运行不需要 Python、虚拟环境或 Homebrew。当前构建为 Apple Silicon arm64，本地 ad-hoc 签名，未做 Developer ID 签名与公证；SwiftUI 源码最低 macOS 14，但本次打包的 FFmpeg 要求 macOS 26，因此交付包最低 macOS 26，在本机 macOS 27.0.1 验证。AI 二进制分发时需要同时携带 `dist/mp3tag` 与 `dist/tools` 文件夹；完整 `.app` 已自带同一套工具。
+应用与 AI 二进制都内置 Python 标签引擎；`dist/tools` 和应用资源内打包 FFmpeg、FFprobe 及其非系统动态库。运行不需要 Python、虚拟环境或 Homebrew。当前构建为 Apple Silicon arm64，本地 ad-hoc 签名，未做 Developer ID 签名与公证；SwiftUI 源码最低 macOS 14，但本次打包的 FFmpeg 要求 macOS 26，因此交付包最低 macOS 26，在本机 macOS 27.0.1 验证。AI 二进制分发时需要同时携带 `dist/audiotag` 与 `dist/tools` 文件夹；完整 `.app` 已自带同一套工具。
 
 从源码构建需 Xcode Command Line Tools、uv、FFmpeg（`brew install ffmpeg`）：
 
@@ -18,25 +18,35 @@
 swift test
 ```
 
-Codex 的 Run 按钮已连接构建脚本。现有网页入口保留，新增视频转换流程以 SwiftUI 和 AI 二进制为入口。
-
-AI 调用 `dist/mp3tag`，标准输出只有 JSON。成功退出码 0，操作失败 1，参数错误 2；`--help` 显示帮助文本。所有输出拒绝覆盖已有文件。
+也可以用 Task 统一执行 macOS 构建与安装：
 
 ```sh
-dist/mp3tag capabilities
-dist/mp3tag probe '/path/video.mp4'
-dist/mp3tag inspect '/path/song.mp3' --include-cover
-dist/mp3tag parse examples/beneath-the-metal-sky.txt
-dist/mp3tag extract '/path/video.mp4' --output '/path/song.mp3' --text examples/beneath-the-metal-sky.txt --bitrate 320
-dist/mp3tag extract '/path/audio.m4a' --output '/path/song.mp3' --no-first-frame
-dist/mp3tag frame '/path/video.mp4' --output '/path/cover.jpg'
-dist/mp3tag patch '/path/song.flac' --output '/path/song.tagged.flac' --metadata metadata.json --cover cover.jpg
+task macos-build          # 只构建
+task macos-install-only   # 安装已有构建产物
+task macos-install        # 构建并安装
+```
+
+`macos-install-only` 会把 `AudioTag.app` 安装到 `/Applications`，并把独立 AI CLI `audiotag` 及其 FFmpeg 工具安装到 `/usr/local/bin`，同时保留 `/usr/local/bin/mp3tag` 兼容别名。
+
+Codex 的 Run 按钮已连接构建脚本。现有网页入口保留，新增视频转换流程以 SwiftUI 和 AI 二进制为入口。
+
+AI 调用 `dist/audiotag`，标准输出只有 JSON。成功退出码 0，操作失败 1，参数错误 2；`--help` 显示帮助文本。所有输出拒绝覆盖已有文件。
+
+```sh
+dist/audiotag capabilities
+dist/audiotag probe '/path/video.mp4'
+dist/audiotag inspect '/path/song.mp3' --include-cover
+dist/audiotag parse examples/beneath-the-metal-sky.txt
+dist/audiotag extract '/path/video.mp4' --output '/path/song.mp3' --text examples/beneath-the-metal-sky.txt --bitrate 320
+dist/audiotag extract '/path/audio.m4a' --output '/path/song.mp3' --no-first-frame
+dist/audiotag frame '/path/video.mp4' --output '/path/cover.jpg'
+dist/audiotag patch '/path/song.flac' --output '/path/song.tagged.flac' --metadata metadata.json --cover cover.jpg
 ```
 
 也支持从 stdin 接收单条 JSON 请求（便于 AI 和其他程序集成）：
 
 ```sh
-dist/mp3tag request <<'JSON'
+dist/audiotag request <<'JSON'
 {"operation":"extract","input":"/path/video.mp4","output":"/path/song.mp3","first_frame":true,"bitrate":320,"metadata":{"title":"Beneath the Metal Sky","artist":"Silent Horizon"}}
 JSON
 ```
