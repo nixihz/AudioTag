@@ -33,8 +33,12 @@ jobs:
 
   swift:
     name: Swift tests
-    runs-on: macos-14
+    # Package.swift 声明 swift-tools-version 6.0.0，需要 Swift 6 工具链；
+    # macos-14 镜像只带 Swift 5.10，会直接解析失败。
+    runs-on: macos-15
     steps:
       - uses: actions/checkout@v4
+      - name: Show toolchain
+        run: swift --version
       - name: Run Swift package tests
         run: swift test
