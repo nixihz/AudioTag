@@ -72,3 +72,13 @@
 - `task macos:check`、`task macos:test:all`、`task macos:build`、`task macos:validate` 全部通过。应用包内容为 `Contents/Resources/audiotag`，无旧名残留；`CFBundleIdentifier` 为 `com.brian.audiotag`，`SUFeedURL` 为 `https://audiotag.xiezhixin.com/updates/appcast.xml`。发行包引擎冒烟测试（隔离 PATH、内置 FFmpeg、首帧、转 MP3、标签保留、PCM 不变）通过。更名后清理了 `.build/` 与 `dist/` 内的旧名构建残留，发行用的 Sparkle 依赖目录予以保留。
 - **发布前仍需人工完成**：新域名 `audiotag.xiezhixin.com` 的 DNS 与托管需指向官网，并在其上提供 `/updates/appcast.xml`；旧域名应保留跳转，否则已安装版本无法继续获得更新。应用标识变更后需重新签名与公证。官网源码页已链接 `audiotag-engine-1.0.0-1.tar.gz`，对应源码包（含 `COPYING`、`BUILDING.md` 与全部 `audiotag/*.py`）尚未生成，`script/check_site.py` 已能按新文件名校验。
 - 使用或查阅 SKILL：`stc`。改进建议：更名清单应显式区分「可改的内部标识」与「会断链的外部绑定（域名、应用标识、签名身份）」，本次先把域名与应用标识一并改掉，再把 DNS 与重新签名列为发布前的人工步骤，避免出现命名已改而服务未跟上的中间态。
+
+## GitHub CI 与编译器缺陷（2026-11-03）
+
+- 仓库已推送到公开仓库 `github.com/nixihz/AudioTag`，并新增 `.github/workflows/ci.yml`：Python、Swift、网站三组任务。首次推送时 Python 与网站任务通过，Swift 任务失败。
+- **失败一（工具链）**：`macos-14` 镜像只带 Swift 5.10，`Package.swift` 声明 `swift-tools-version: 6.0.0`，包解析阶段即失败。改用 `macos-15` 后进入编译阶段。
+- **失败二（编译器缺陷）**：Swift 6.1.2 与 6.2.4 在编译 `Sources/AudioTagApp/AppUpdater.swift` 时崩溃，表现为 `SmallVector unable to grow`（6.1）与 `emitActorIsolationErasureThunk` 断言失败（6.2）。根因是旧版 SwiftUI SDK 里 `Binding.init(get:set:)` 为非隔离，传入 `@MainActor` 方法引用会要求编译器生成 reabstraction thunk，编译器在该路径上崩溃；新版 SDK 已把该初始化器标注为 `@MainActor`，本地 Swift 6.4.2 编译正常。改为显式闭包后不再生成该 thunk，项目因此也能在 Xcode 16.4 上编译。
+- **runner 选择**：`macos-26` 工具链最新，但公开仓库常因 arm64 容量不足而排队 15 分钟后被取消（提示 "The job was not acquired by Runner of type hosted"）。`macos-15` 供给稳定，因此固定使用 `macos-15`；若将来 macOS 容量恢复，可再评估切回。
+- **集成测试补齐**：Swift 任务原先缺引擎二进制，桥接层两项集成测试被跳过。现于该任务内用 PyInstaller 构建 `dist/audiotag`，两项测试实际执行。
+- **顺带修正**：`tests/AudioTagBridgeTests/EngineTests.swift` 中 `AUDIOTAG_TEST_ENGINE` 环境变量读取重复了两次，已去重。
+- 本地 13 项 Swift 测试、46 项 Python 测试、13 项 Node 测试全部通过；GitHub Actions 三组任务全部通过。

@@ -40,6 +40,16 @@ jobs:
     runs-on: macos-15
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      # 桥接层集成测试要调用真实引擎，否则会被跳过。
+      - name: Build the tag engine
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e '.[dev]' pyinstaller
+          python -m PyInstaller --noconfirm --onefile --name audiotag \
+            --distpath dist --workpath .build/python --specpath .build --paths . script/engine_entry.py
       - name: Show toolchain
         run: swift --version
       - name: Run Swift package tests
