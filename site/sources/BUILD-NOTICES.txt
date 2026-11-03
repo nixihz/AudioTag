@@ -1,7 +1,7 @@
 本地打包的 FFmpeg 与动态库，保留原软件许可要求。构建信息：
 ffmpeg version 9.0.2 Copyright (c) 2000-2026 the FFmpeg developers
 built with Apple clang version 21.0.0 (clang-2100.3.34.2)
-configuration: --prefix=/opt/case/iamx/Mp3tag/.build/release-tools/prefix --disable-autodetect --disable-doc --disable-debug --disable-ffplay --disable-network --disable-shared --enable-static --enable-libmp3lame --extra-cflags=-I/opt/case/iamx/Mp3tag/.build/release-tools/prefix/include --extra-ldflags=-L/opt/case/iamx/Mp3tag/.build/release-tools/prefix/lib
+configuration: --prefix=<local-path> --disable-autodetect --disable-doc --disable-debug --disable-ffplay --disable-network --disable-shared --enable-static --enable-libmp3lame --extra-cflags=-I<local-path>/include --extra-ldflags=-L<local-path>/lib
 libavutil      61.  1.102 / 61.  1.102
 libavcodec     63.  1.102 / 63.  1.102
 libavformat    63.  1.102 / 63.  1.102

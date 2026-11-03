@@ -7,6 +7,9 @@ output/
 .build/
 .swiftpm/
 dist/
+site/downloads/
+site/updates/
+site/release.json
 
 # 本地服务数据可能包含密钥，不随源码分发。
 data/

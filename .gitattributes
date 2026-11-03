@@ -1,0 +1,15 @@
+*.sh text eol=lf
+*.py text eol=lf
+*.swift text eol=lf
+*.html text eol=lf
+*.css text eol=lf
+*.js text eol=lf
+*.json text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+*.txt text eol=lf
+*.md text eol=lf
+*.tar.gz binary
+*.tar.xz binary
+*.icns binary
+*.png binary

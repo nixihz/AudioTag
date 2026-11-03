@@ -2,7 +2,7 @@ import AppKit
 import Foundation
 
 let root = URL(fileURLWithPath: FileManager.default.currentDirectoryPath)
-let iconset = root.appendingPathComponent(".build/Mp3tag.iconset")
+let iconset = root.appendingPathComponent(".build/AudioTag.iconset")
 let assets = root.appendingPathComponent("assets")
 try FileManager.default.createDirectory(at: iconset, withIntermediateDirectories: true)
 try FileManager.default.createDirectory(at: assets, withIntermediateDirectories: true)

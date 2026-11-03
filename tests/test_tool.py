@@ -13,9 +13,9 @@ from mutagen.id3 import TCOM
 from PIL import Image
 import pytest
 
-from mp3tag.parser import parse_text, validate_patch
-from mp3tag.server import app
-from mp3tag.tags import get_cover, inspect_audio, load_audio, patch_file
+from audiotag.parser import parse_text, validate_patch
+from audiotag.server import app
+from audiotag.tags import get_cover, inspect_audio, load_audio, patch_file
 
 
 @pytest.fixture(params=[("mp3", "libmp3lame"), ("flac", "flac"), ("m4a", "aac"), ("ogg", "vorbis"), ("opus", "libopus"), ("wav", "pcm_s16le")])
@@ -128,7 +128,7 @@ def test_web_branding():
         assert 'aria-label="AudioTag 首页"' in response.text
 
 
-@pytest.mark.parametrize("command", ["audiotag", "mp3tag"])
+@pytest.mark.parametrize("command", ["audiotag"])
 def test_cli_names_parse_metadata(command, tmp_path):
     executable = Path(sys.executable).parent / command
     source = tmp_path / "info.txt"
@@ -149,7 +149,7 @@ def test_cli_backup_and_refusal(tmp_path):
     original = path.read_bytes()
     info = tmp_path / "info.txt"
     info.write_text("Title: 原地修改验证", encoding="utf-8")
-    command = [sys.executable, "-m", "mp3tag.cli", "patch", str(path), "--text", str(info), "--in-place"]
+    command = [sys.executable, "-m", "audiotag.cli", "patch", str(path), "--text", str(info), "--in-place"]
     result = subprocess.run(command, capture_output=True)
     assert result.returncode == 0, result.stderr.decode()
     assert path.with_name("song.mp3.bak").read_bytes() == original

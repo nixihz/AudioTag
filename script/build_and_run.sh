@@ -7,7 +7,6 @@ CONFIGURATION="${CONFIGURATION:-debug}"
 SIGNING_IDENTITY="${SIGNING_IDENTITY:--}"
 if [[ "$MODE" != "--build-only" ]]; then
   pkill -x AudioTag >/dev/null 2>&1 || true
-  pkill -x Mp3tag >/dev/null 2>&1 || true
 fi
 if [[ ! -x .venv/bin/pyinstaller ]]; then
   uv venv .venv --allow-existing
@@ -17,15 +16,12 @@ if [[ ! -x dist/audiotag ]] || ! .venv/bin/python - <<'PY'
 from pathlib import Path
 import sys
 binary = Path('dist/audiotag')
-sources = [Path('script/engine_entry.py'), *Path('mp3tag').glob('*.py')]
+sources = [Path('script/engine_entry.py'), *Path('audiotag').glob('*.py')]
 sys.exit(0 if binary.exists() and all(path.stat().st_mtime <= binary.stat().st_mtime for path in sources) else 1)
 PY
 then
   .venv/bin/pyinstaller --noconfirm --onefile --name audiotag --distpath dist --workpath .build/python --specpath .build --paths . script/engine_entry.py >/dev/null
 fi
-# Keep the old filename as a local compatibility alias for existing scripts.
-rm -rf dist/mp3tag
-ln -s audiotag dist/mp3tag
 swift build -c "$CONFIGURATION"
 APP_BUNDLE="${APP_BUNDLE:-$ROOT_DIR/dist/AudioTag.app}"
 if [[ ! -f dist/tools/BUILD-NOTICES.txt || script/bundle_tools.py -nt dist/tools/BUILD-NOTICES.txt || "$(command -v ffmpeg)" -nt dist/tools/BUILD-NOTICES.txt ]]; then

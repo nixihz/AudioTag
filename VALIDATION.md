@@ -13,7 +13,7 @@
 
 ## SwiftUI 与 MP4 转 MP3
 
-- 使用 SwiftPM 构建原生 SwiftUI `Mp3tag.app`，通过 `script/build_and_run.sh --verify` 构建并成功启动，Codex Run 入口已配置。标签引擎打包为 arm64 Mach-O 二进制，支持命令式调用与 stdin JSON。
+- 使用 SwiftPM 构建原生 SwiftUI `AudioTag.app`，通过 `script/build_and_run.sh --verify` 构建并成功启动，Codex Run 入口已配置。标签引擎打包为 arm64 Mach-O 二进制，支持命令式调用与 stdin JSON。
 - 本次 29 项 Python 测试通过，另有 2 项 Swift 测试通过。转换测试覆盖首帧颜色/尺寸、码率/时长、保留视频基础标签、歌词换行、图片覆盖首帧、无音轨与无视频的错误、输出覆盖保护和结构化 JSON 错误。Swift 测试实际启动打包后的二进制验证成功与失败响应。
 - 用用户 MP4 在 AI 二进制与 SwiftUI 中分别完成完整导出。两个输出的 8 个字段、36 行歌词与 APIC 前封面一致；时长 164.23 秒，320 kbps，封面 1024×1024。封面字节与单独导出的第一帧 JPEG 一致。
 - 本次 MP4 输出副本：`output/video/Beneath the Metal Sky.mp3`；UI 输出：`output/native/Beneath the Metal Sky.mp3`；首帧：`output/video/first-frame.jpg`。原文件不修改。
@@ -24,7 +24,7 @@
 ## SwiftUI 界面优化
 
 - 按 `emil-design-eng` 优化信息层级与交互：紧凑工具栏、独立滚动的文件与编辑区域、固定底部导出区、基本标签与歌词分段、文本解析成功后自动收起导入区。设计要求同步至 DESIGN.md。
-- `swift build`、`script/build_and_run.sh --verify`、2 项 Swift 桥接测试和 `codesign --verify --deep --strict dist/Mp3tag.app` 全部通过。
+- `swift build`、`script/build_and_run.sh --verify`、2 项 Swift 桥接测试和 `codesign --verify --deep --strict dist/AudioTag.app` 全部通过。
 - 原生界面实测空状态、示例解析、Cmd+O 打开用户 MP4、首帧预览、320 kbps 转换选项、歌词分段切换与内部滚动。切回基本标签后，7 个基本字段与勾选状态保留，歌词仍为 36 行，导出按钮始终可见。
 - 实际截图：`output/ui-polish.png`、`output/ui-polish-lyrics.png`。本轮未修改标签引擎，未重复执行音频导出验证。
 - 本轮使用 SKILL：`emil-design-eng`，构建沿用 `build-macos-apps:build-run-debug` 工作流。改进建议：为设计技能补充 SwiftUI/macOS 示例，说明鼠标按压与键盘触发反馈的区别、固定操作区及 Reduce Motion 的适配。
@@ -42,24 +42,33 @@
 
 ## 官网与 Sparkle 发行准备（2026-10-27）
 
-- 参考 `/opt/case/brian/music` 创建 `site/`，包含陶土红官网、功能与格式限制、版本数据读取、源码与许可页；新增原生图标。工作台图使用 HTML/CSS 流程示意，明确标注非截图，未冒用旧版界面截图。
-- 原生端接入固定版本 Sparkle 2.10.0，保留 `com.brian.mp3tag` 身份。生成独立 Keychain account `mp3tag` 的 Ed25519 密钥，源码仅保存公钥；菜单与设置页支持检查更新和自动检查。当前官网/feed 地址沿用 music 的命名约定，仍须以实际平台发布返回值核对。
+- 参考 `此前的本地项目目录` 创建 `site/`，包含陶土红官网、功能与格式限制、版本数据读取、源码与许可页；新增原生图标。工作台图使用 HTML/CSS 流程示意，明确标注非截图，未冒用旧版界面截图。
+- 原生端接入固定版本 Sparkle 2.10.0，保留 `com.brian.audiotag` 身份。生成独立 Keychain account `audiotag` 的 Ed25519 密钥，源码仅保存公钥；菜单与设置页支持检查更新和自动检查。当前官网/feed 地址沿用 music 的命名约定，仍须以实际平台发布返回值核对。
 - `swift test` 的 4 项测试、Python 的 29 项测试、Node 的 3 项网站逻辑测试全部通过。网站测试覆盖同源下载路径、编码越界/查询凭据拒绝、版本入口更新与失败降级。Python 仍有既存 Starlette/httpx 弃用提醒。脚本的 shell 语法和 Python 编译检查通过。
 - 从 FFmpeg 9.0.2 和 LAME 4.0 的校验源码构建独立媒体工具，禁用 GPL/nonfree、网络与自动依赖发现，并关闭 LAME 的 mpg123 解码器。实际只随包携带一个 LAME 动态库；没有复制 Homebrew 的其他可选依赖。组件许可证随应用与源码页提供，第三方原始源码保存在本地 `site/sources/`。
-- 已构建 `.build/public-release-1/Mp3tag.app`，版本 `1.0.0（1）`，arm64，最低 macOS 26.0。主程序、Python 内嵌库、媒体工具与 Sparkle 辅助进程使用 `Developer ID Application: zhixin xie (77TN4427T5)` 签名，Hardened Runtime 启用；`codesign --verify --deep --strict` 通过。
+- 已构建 `.build/public-release-1/AudioTag.app`，版本 `1.0.0（1）`，arm64，最低 macOS 26.0。主程序、Python 内嵌库、媒体工具与 Sparkle 辅助进程使用 `Developer ID Application（维护者证书）` 签名，Hardened Runtime 启用；`codesign --verify --deep --strict` 通过。
 - 对该发行候选包执行 `script/verify_engine_bundle.py`，将 PATH 限制为 `/usr/bin:/bin`，验证实际调用内置 FFmpeg，生成 MP4、提取首帧、转 MP3、写入标签，再修改标题。未选艺术家保留；原视频 SHA-256 和仅标签修改前后解码 PCM SHA-256 均不变。
-- `app-platform run` 能安装本地网站草稿；HTTP 检查首页和图标均返回 200，打包命令生成 `.build/mp3tag-site-draft.zip`。`script/check_site.py --draft` 通过已有资源检查，并明确列出尚缺的正式版本数据、appcast、校验文件与引擎对应源码归档。完整检查目前应失败，不能据草稿检查放行公开发布。
-- **未完成公证与部署。** `notarytool` 提交返回 `No Keychain password item found for profile: samantha-notary`；重新授权执行后结果相同。平台 `whoami` 返回未登录，浏览器授权流程尚未完成。官方 `generate_appcast` 尝试停在 Keychain 读取，已终止等待，未生成可交付 appcast。Python 标签引擎公开源码/许可仍待作者确认，未上传项目源码或发行包。
+- `app-platform run` 能安装本地网站草稿；HTTP 检查首页和图标均返回 200，打包命令生成 `.build/audiotag-site-draft.zip`。`script/check_site.py --draft` 通过已有资源检查，并明确列出尚缺的正式版本数据、appcast、校验文件与引擎对应源码归档。完整检查目前应失败，不能据草稿检查放行公开发布。
+- **未完成公证与部署。** `notarytool` 提交返回 `No Keychain password item found for profile: <notary-profile>`；重新授权执行后结果相同。平台 `whoami` 返回未登录，浏览器授权流程尚未完成。官方 `generate_appcast` 尝试停在 Keychain 读取，已终止等待，未生成可交付 appcast。Python 标签引擎公开源码/许可仍待作者确认，未上传项目源码或发行包。
 - **未完成视觉与真实更新验收。** CUA 原生 app 接口多次返回 `timeoutReached`，IAB 返回 `Browser is not available: iab`，因此没有宣称桌面/移动端渲染截图验收或在线更新成功。旧版在线发现、下载、验签、替换、重启与篡改拒绝需在公证和部署完成后实测。
 - 本轮使用或查阅 SKILL：`stc`、`emil-design-eng`、`animate`、`qimao-apps`、`sites:sites`、`build-web-apps:frontend-app-builder`、`build-web-apps:frontend-testing-debugging`、`build-macos-apps:build-run-debug`、`build-macos-apps:signing-entitlements`、`build-macos-apps:packaging-notarization`。改进建议：发行技能补充自有 `app-platform` 静态域名托管分支、GPL 引擎对应源码授权检查，以及钥匙串读取受阻时的明确停点，避免将签名成功等同于公证或上线。
 
 ## AudioTag 更名验证（2026-10-28）
 
-- 对外名称改为 AudioTag，覆盖原生窗口、设置页、本地网页、官网草稿和发行说明；SwiftPM 可执行产品与应用包改为 AudioTag。保留内部模块、Python 分发包、Bundle ID、更新公钥、Keychain account、站点标识及现有域名。
-- 新增 `audiotag` 命令，保留 `mp3tag`。重新执行可编辑安装时发现 setuptools 自动发现了多个顶层目录，因此限定只打包 `mp3tag*`，安装随后通过。两个命令均实测解析相同歌曲信息，帮助文本均显示 AudioTag。
+- 对外名称改为 AudioTag，覆盖原生窗口、设置页、本地网页、官网草稿和发行说明；SwiftPM 可执行产品与应用包改为 AudioTag。当时仍保留内部模块、Python 分发包、Bundle ID、更新公钥、Keychain account、站点标识及原有域名，这些标识已在 2026-11-03 的统一更名中一并更新。
+- 新增 `audiotag` 命令，旧命令当时保留为兼容别名。重新执行可编辑安装时发现 setuptools 自动发现了多个顶层目录，因此限定只打包对应前缀，安装随后通过。两个命令均实测解析相同歌曲信息，帮助文本均显示 AudioTag。
 - Python 32 项、Swift 4 项、Node 3 项测试通过。新增检查覆盖网页名称、批量下载文件名、命令别名与官网动态版本标题；Python 仍有既存 Starlette/httpx 弃用提醒。
 - `script/build_and_run.sh --build-only` 和 `--verify` 通过；实际启动进程为 `dist/AudioTag.app/Contents/MacOS/AudioTag`。应用 plist 中显示名、名称和可执行文件均为 AudioTag，Bundle ID 与 feed 保持原值。新包为本地 ad-hoc 签名调试构建，`codesign --verify --deep --strict` 通过，不代表已完成 Developer ID 发行或公证。
 - 对新包执行 `script/verify_engine_bundle.py`，隔离 PATH 后验证内置 FFmpeg、首帧、MP4 转 MP3、标签保留、原文件和 PCM 不变，全部通过。Shell 启动与发行脚本语法检查通过。
-- 官网草稿检查通过，但仍缺正式版本数据、appcast、校验清单和对应引擎源码，未公证、未部署。历史验证记录中的 Mp3tag 名称保留，不改写旧制品及旧验证事实。
+- 官网草稿检查通过，但仍缺正式版本数据、appcast、校验清单和对应引擎源码，未公证、未部署。历史验证记录中的旧名称保留为对当时事实的记述，不改写旧制品及旧验证事实。
 - CUA 应用清单确认 AudioTag 正在运行，但读取窗口返回 `cgWindowNotFound`；按 Bundle ID 读取又因新旧应用共享既有身份而歧义。未完成窗口截图和视觉验收。
 - 使用或查阅 SKILL：`stc`、`emil-design-eng`、`build-macos-apps:build-run-debug`、`sites:sites`。改进建议：更名流程可增加“展示名、命令别名、内部标识、更新身份、托管地址”的迁移清单，避免全局替换破坏兼容。
+
+## 统一更名（2026-11-03）
+
+- 更名从对外展示扩展到全部内部标识：Python 包 `audiotag`、分发包 `audiotag-local`、SwiftPM 目标 `AudioTagApp` 与 `AudioTagBridge`（含 `Sources/`、`tests/` 目录）、可执行目标 `AudioTagApp`、图标 `assets/AudioTag.icns`、应用标识 `com.brian.audiotag`、环境变量前缀 `AUDIOTAG_`、临时目录前缀 `audiotag-`、官网 `apps.yaml` 标识与路由、更新源域名 `audiotag.xiezhixin.com`、发行源码包 `audiotag-engine-<版本>-<构建>.tar.gz`。全仓文本检索已无旧名称。
+- **移除兼容别名**：更名前遗留的旧命令名、`dist/` 下的旧名符号链接、`/usr/local/bin/` 下的旧名安装项，以及应用包内 `Resources/` 下的旧名资源清理逻辑一并删除，`install_macos.sh` 不再接受 `LEGACY_INSTALL_BIN`。依赖旧命令的用户脚本需要改用 `audiotag`。
+- Python 46 项、Swift 10 项、Node 13 项测试通过。Python 用例数由 47 降为 46，因原「旧命令别名」参数化用例已不再需要两种命令名。
+- `task macos:check`、`task macos:test:all`、`task macos:build`、`task macos:validate` 全部通过。应用包内容为 `Contents/Resources/audiotag`，无旧名残留；`CFBundleIdentifier` 为 `com.brian.audiotag`，`SUFeedURL` 为 `https://audiotag.xiezhixin.com/updates/appcast.xml`。发行包引擎冒烟测试（隔离 PATH、内置 FFmpeg、首帧、转 MP3、标签保留、PCM 不变）通过。更名后清理了 `.build/` 与 `dist/` 内的旧名构建残留，发行用的 Sparkle 依赖目录予以保留。
+- **发布前仍需人工完成**：新域名 `audiotag.xiezhixin.com` 的 DNS 与托管需指向官网，并在其上提供 `/updates/appcast.xml`；旧域名应保留跳转，否则已安装版本无法继续获得更新。应用标识变更后需重新签名与公证。官网源码页已链接 `audiotag-engine-1.0.0-1.tar.gz`，对应源码包（含 `COPYING`、`BUILDING.md` 与全部 `audiotag/*.py`）尚未生成，`script/check_site.py` 已能按新文件名校验。
+- 使用或查阅 SKILL：`stc`。改进建议：更名清单应显式区分「可改的内部标识」与「会断链的外部绑定（域名、应用标识、签名身份）」，本次先把域名与应用标识一并改掉，再把 DNS 与重新签名列为发布前的人工步骤，避免出现命名已改而服务未跟上的中间态。

@@ -1,8 +1,10 @@
 # AudioTag
 
+> AudioTag 按 GNU GPL v3 或更高版本发布。第三方组件保留各自许可证，详见 `Config/Licenses/`。
+
 本地音频标签工具。粘贴中文或英文歌曲信息，写入标题、歌手、专辑、流派、年份、音轨、BPM、歌词和封面。支持 MP3、FLAC、M4A/MP4（音频）、OGG Vorbis、Opus、WAV。
 
-项目原名 Mp3tag，现更名为 AudioTag，避免名称被理解为只支持 MP3。原生应用为 `AudioTag.app`，源码安装和独立二进制 CLI 均使用 `audiotag` 命令；旧的 `mp3tag` 命令继续可用作兼容别名。内部 Python 包、Bundle ID、更新签名身份和现有站点地址暂时保留，不影响已有集成。
+项目已统一更名为 AudioTag，避免名称被理解为只支持 MP3。原生应用为 `AudioTag.app`，源码安装和独立二进制 CLI 均使用 `audiotag` 命令，不再保留旧命令。Python 包为 `audiotag`，SwiftPM 目标为 `AudioTagApp` 与 `AudioTagBridge`，应用标识为 `com.brian.audiotag`。更新源地址为 `https://audiotag.xiezhixin.com/updates/appcast.xml`，发布前需先把该域名指向官网并保证 `/updates/appcast.xml` 可访问。
 
 ## SwiftUI macOS 应用与 AI 二进制
 
@@ -18,15 +20,23 @@
 swift test
 ```
 
-也可以用 Task 统一执行 macOS 构建与安装：
+也可以用 Task 统一执行 macOS 检查、测试、构建、安装与运行。直接执行 `task` 只显示任务列表，不会修改本机：
 
 ```sh
-task macos-build          # 只构建
-task macos-install-only   # 安装已有构建产物
-task macos-install        # 构建并安装
+task macos:check              # 语法与官网草稿检查
+task macos:test               # SwiftPM macOS 测试
+task macos:test:all           # Swift、Python、网站测试
+task macos:build              # 只构建
+task macos:validate            # 验证已有构建产物
+task macos:install-only       # 安装已有构建产物
+task macos:install            # 构建并安装
+task macos:run                # 构建并启动，不安装
+task macos:ci                 # 检查、测试、构建，不安装
 ```
 
-`macos-install-only` 会把 `AudioTag.app` 安装到 `/Applications`，并把独立 AI CLI `audiotag` 及其 FFmpeg 工具安装到 `/usr/local/bin`，同时保留 `/usr/local/bin/mp3tag` 兼容别名。
+旧名称 `macos-build`、`macos-install-only` 和 `macos-install` 仍保留为兼容入口。`macos:install-only` 默认把 `AudioTag.app` 安装到 `/Applications`，把独立 AI CLI `audiotag` 及其 FFmpeg 工具安装到 `/usr/local/bin`；安装前会暂存并校验新产物，失败时尝试恢复旧版本。可用 `INSTALL_APP`、`INSTALL_BIN` 和 `INSTALL_TOOLS` 覆盖安装目标，测试安装时应使用临时目录。
+
+发行前检查与发行流程分别使用 `task macos:release:preflight` 和 `task macos:release`。发行流程会运行项目已有测试、签名、公证并生成本地发行制品，但不会上传；需要通过环境变量提供 `SIGNING_IDENTITY`、`NOTARY_PROFILE` 和 `SPARKLE_KEY_ACCOUNT`。`task macos:clean` 只清理 `dist/` 与 `.build/`，不会删除 `.venv/` 或 `site/`。
 
 Codex 的 Run 按钮已连接构建脚本。现有网页入口保留，新增视频转换流程以 SwiftUI 和 AI 二进制为入口。
 

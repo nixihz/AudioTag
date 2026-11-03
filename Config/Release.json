@@ -2,6 +2,6 @@
   "version": "1.0.0",
   "build": "1",
   "minimumSystemVersion": "26.0",
-  "feedURL": "https://mp3tag.xiezhixin.com/updates/appcast.xml",
+  "feedURL": "https://audiotag.xiezhixin.com/updates/appcast.xml",
   "publicEDKey": "UUdyvvvoKwsc6V9lpn50x1eW5HMQYZqwrmEMCApcRbQ="
 }

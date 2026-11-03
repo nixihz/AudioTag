@@ -61,7 +61,7 @@ struct UpdateSettings: View {
             }
             Toggle("自动检查更新", isOn: Binding(get: { updater.automaticallyChecks }, set: updater.setAutomaticallyChecks))
             Text(updater.status).font(.caption).foregroundStyle(EditorTheme.muted)
-            Link("访问官网与版本记录", destination: URL(string: "https://mp3tag.xiezhixin.com/")!)
+            Link("访问官网与版本记录", destination: URL(string: "https://audiotag.xiezhixin.com/")!)
                 .foregroundStyle(EditorTheme.accent)
         }
         .padding(28).frame(width: 440)

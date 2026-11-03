@@ -23,7 +23,7 @@ cd "$WORK/ffmpeg-9.0.2"
 make -j 8 > "$WORK/ffmpeg-make.log" 2>&1
 make install > "$WORK/ffmpeg-install.log" 2>&1
 cd "$ROOT"
-PATH="$PREFIX/bin:$PATH" MP3TAG_TOOLS_PREFIX="$PREFIX" .venv/bin/python script/bundle_tools.py "$WORK/bundle-encoder-only"
+PATH="$PREFIX/bin:$PATH" AUDIOTAG_TOOLS_PREFIX="$PREFIX" .venv/bin/python script/bundle_tools.py "$WORK/bundle-encoder-only"
 mkdir -p Config/Licenses site/sources
 cp "$WORK/ffmpeg-9.0.2/COPYING.LGPLv2.1" Config/Licenses/FFmpeg-LGPL-2.1.txt
 cp "$WORK/ffmpeg-9.0.2/LICENSE.md" Config/Licenses/FFmpeg-LICENSE.md

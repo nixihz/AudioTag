@@ -1,68 +1,245 @@
 version: '3'
 
+dir: '{{.ROOT_DIR}}'
+
 vars:
   APP_BUNDLE: '{{.ROOT_DIR}}/dist/AudioTag.app'
   CLI_BINARY: '{{.ROOT_DIR}}/dist/audiotag'
   TOOLS_BUNDLE: '{{.ROOT_DIR}}/dist/tools'
-  INSTALL_APP: /Applications/AudioTag.app
-  INSTALL_BIN: /usr/local/bin/audiotag
-  LEGACY_INSTALL_BIN: /usr/local/bin/mp3tag
-  INSTALL_TOOLS: /usr/local/bin/tools
+  CONFIGURATION: '{{default "debug" (env "CONFIGURATION")}}'
+  SIGNING_IDENTITY: '{{default "-" (env "SIGNING_IDENTITY")}}'
+  NOTARY_PROFILE: '{{default "" (env "NOTARY_PROFILE")}}'
+  SPARKLE_KEY_ACCOUNT: '{{default "" (env "SPARKLE_KEY_ACCOUNT")}}'
+  INSTALL_APP: '{{default "/Applications/AudioTag.app" (env "INSTALL_APP")}}'
+  INSTALL_BIN: '{{default "/usr/local/bin/audiotag" (env "INSTALL_BIN")}}'
+  INSTALL_TOOLS: '{{default "/usr/local/bin/tools" (env "INSTALL_TOOLS")}}'
 
 tasks:
   default:
-    desc: Build and install AudioTag for macOS
+    desc: 显示 macOS 任务列表，不构建、不安装、不启动
     cmds:
-      - task: macos-install
+      - task --list
 
-  macos-build:
-    desc: Build the macOS app, CLI binary, and bundled media tools
-    cmds:
-      - ./script/build_and_run.sh --build-only
-
-  macos-install-only:
-    desc: Install existing macOS build artifacts into /Applications and /usr/local/bin
+  macos:prepare:
+    desc: 检查 macOS 构建所需工具和工程文件，不安装依赖、不构建
+    platforms: [darwin]
     cmds:
       - |
         set -euo pipefail
-
-        app_bundle='{{.APP_BUNDLE}}'
-        cli_binary='{{.CLI_BINARY}}'
-        tools_bundle='{{.TOOLS_BUNDLE}}'
-        install_app='{{.INSTALL_APP}}'
-        install_bin='{{.INSTALL_BIN}}'
-        legacy_install_bin='{{.LEGACY_INSTALL_BIN}}'
-        install_tools='{{.INSTALL_TOOLS}}'
-
-        for artifact in "$app_bundle" "$cli_binary" "$tools_bundle/ffmpeg" "$tools_bundle/ffprobe"; do
-          if [[ ! -e "$artifact" ]]; then
-            echo "缺少构建产物：$artifact，请先运行 task macos-build" >&2
+        for tool in bash swift swiftc uv python3 ffmpeg ffprobe codesign ditto; do
+          command -v "$tool" >/dev/null || {
+            echo "缺少工具：$tool" >&2
             exit 1
-          fi
+          }
         done
+        for path in Package.swift script/build_and_run.sh script/stage_app.py script/bundle_tools.py; do
+          [[ -f "$path" ]] || {
+            echo "缺少构建输入：$path" >&2
+            exit 1
+          }
+        done
+        echo "macOS 构建前置条件已满足"
 
-        rm -rf "$install_app"
-        /usr/bin/ditto --rsrc --extattr --acl "$app_bundle" "$install_app"
+  macos:syntax:
+    desc: 检查 Shell、Python、JavaScript 和 Swift 源码语法，不执行测试
+    platforms: [darwin]
+    cmds:
+      - |
+        set -euo pipefail
+        find script -type f -name '*.sh' -exec bash -n {} +
+        find audiotag script tests -type f -name '*.py' -exec python3 -c '
+        import ast
+        from pathlib import Path
+        import sys
 
-        mkdir -p "$install_tools"
-        rm -rf "$install_tools"
-        /usr/bin/ditto --rsrc --extattr --acl "$tools_bundle" "$install_tools"
-        /usr/bin/ditto --rsrc --extattr --acl "$cli_binary" "$install_bin"
-        rm -rf "$legacy_install_bin"
-        ln -s "$(basename "$install_bin")" "$legacy_install_bin"
-        chmod 755 "$install_bin" "$install_tools/ffmpeg" "$install_tools/ffprobe"
+        for name in sys.argv[2:]:
+            path = Path(name)
+            ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
+        ' python3 {} +
+        find site audiotag tests -type f \( -name '*.js' -o -name '*.cjs' \) \
+          -exec sh -c 'for file do node --check "$file" || exit; done' sh {} +
+        find Sources tests -type f -name '*.swift' \
+          -exec sh -c 'for file do swiftc -frontend -parse "$file" || exit; done' sh {} +
+        echo "源码语法检查通过"
 
-        /usr/bin/codesign --verify --deep --strict "$install_app"
-        /usr/bin/codesign --verify --deep --strict "$install_bin"
-        "$install_bin" capabilities >/dev/null
+  macos:check:
+    desc: 执行 macOS 快速只读检查，不测试、不构建、不安装
+    platforms: [darwin]
+    cmds:
+      - task: macos:syntax
+      - python3 script/check_site.py --draft
 
-        echo "已安装：$install_app"
-        echo "已安装：$install_bin"
-        echo "兼容别名：$legacy_install_bin"
-        echo "已安装：$install_tools"
+  macos:test:
+    desc: 运行 SwiftPM macOS 测试，不构建应用、不安装
+    platforms: [darwin]
+    cmds:
+      - swift test
+
+  macos:test:all:
+    desc: 依次运行 Swift、Python 和网站测试，不构建应用、不安装
+    platforms: [darwin]
+    cmds:
+      - task: macos:test
+      - |
+        [[ -x .venv/bin/python ]] || {
+          echo "缺少 .venv/bin/python，请先按 README 安装开发依赖" >&2
+          exit 1
+        }
+        .venv/bin/python -m pytest -q
+      - node --test tests/site.test.cjs tests/local_editor.test.cjs
+
+  macos:build:
+    desc: 构建 macOS 应用、CLI 和内置媒体工具，不测试、不安装、不启动
+    platforms: [darwin]
+    cmds:
+      - task: macos:prepare
+      - cmd: ./script/build_and_run.sh --build-only
+        env:
+          CONFIGURATION: '{{.CONFIGURATION}}'
+          SIGNING_IDENTITY: '{{.SIGNING_IDENTITY}}'
+      - |
+        set -euo pipefail
+        for artifact in \
+          "{{.APP_BUNDLE}}/Contents/MacOS/AudioTag" \
+          "{{.CLI_BINARY}}" \
+          "{{.TOOLS_BUNDLE}}/ffmpeg" \
+          "{{.TOOLS_BUNDLE}}/ffprobe"; do
+          [[ -e "$artifact" ]] || {
+            echo "构建产物缺失：$artifact" >&2
+            exit 1
+          }
+        done
+        echo "macOS 构建产物已生成"
+
+  macos:install-only:
+    desc: 安装已有 macOS 构建产物，不构建、不启动；可覆盖 INSTALL_* 目标
+    platforms: [darwin]
+    cmds:
+      - cmd: ./script/install_macos.sh
+        env:
+          APP_BUNDLE: '{{.APP_BUNDLE}}'
+          CLI_BINARY: '{{.CLI_BINARY}}'
+          TOOLS_BUNDLE: '{{.TOOLS_BUNDLE}}'
+          INSTALL_APP: '{{.INSTALL_APP}}'
+          INSTALL_BIN: '{{.INSTALL_BIN}}'
+          INSTALL_TOOLS: '{{.INSTALL_TOOLS}}'
+
+  macos:install:
+    desc: 先构建再安装 macOS 产物，不启动
+    platforms: [darwin]
+    cmds:
+      - task: macos:build
+      - task: macos:install-only
+
+  macos:run:
+    desc: 构建并启动 macOS 应用，不安装到系统目录
+    platforms: [darwin]
+    cmds:
+      - cmd: ./script/build_and_run.sh
+        env:
+          CONFIGURATION: '{{.CONFIGURATION}}'
+          SIGNING_IDENTITY: '{{.SIGNING_IDENTITY}}'
+
+  macos:validate:
+    desc: 验证已有应用、CLI、架构、签名和内置引擎，不重建
+    platforms: [darwin]
+    cmds:
+      - |
+        set -euo pipefail
+        for artifact in \
+          "{{.APP_BUNDLE}}" \
+          "{{.APP_BUNDLE}}/Contents/MacOS/AudioTag" \
+          "{{.CLI_BINARY}}" \
+          "{{.TOOLS_BUNDLE}}/ffmpeg" \
+          "{{.TOOLS_BUNDLE}}/ffprobe"; do
+          [[ -e "$artifact" ]] || {
+            echo "缺少待验证产物：$artifact，请先运行 task macos:build" >&2
+            exit 1
+          }
+        done
+        /usr/bin/file "{{.APP_BUNDLE}}/Contents/MacOS/AudioTag" | grep -q 'arm64'
+        /usr/bin/file "{{.CLI_BINARY}}" | grep -q 'arm64'
+        /usr/bin/codesign --verify --deep --strict "{{.APP_BUNDLE}}"
+        /usr/bin/codesign --verify --deep --strict "{{.CLI_BINARY}}"
+        "{{.CLI_BINARY}}" capabilities >/dev/null
+        python3 script/verify_engine_bundle.py "{{.APP_BUNDLE}}"
+        echo "macOS 产物验证通过"
+
+  macos:release:preflight:
+    desc: 检查发行工具、源码归档和凭据引用，不构建、不签名、不公证
+    platforms: [darwin]
+    env:
+      SIGNING_IDENTITY: '{{.SIGNING_IDENTITY}}'
+      NOTARY_PROFILE: '{{.NOTARY_PROFILE}}'
+      SPARKLE_KEY_ACCOUNT: '{{.SPARKLE_KEY_ACCOUNT}}'
+    cmds:
+      - |
+        set -euo pipefail
+        for name in SIGNING_IDENTITY NOTARY_PROFILE SPARKLE_KEY_ACCOUNT; do
+          [[ -n "${!name:-}" ]] || {
+            echo "请设置 $name；只传递引用名称，不要把密钥写入 Taskfile" >&2
+            exit 1
+          }
+        done
+        for tool in bash swift python3 node make tar shasum otool install_name_tool codesign ditto xcrun spctl; do
+          command -v "$tool" >/dev/null || {
+            echo "缺少发行工具：$tool" >&2
+            exit 1
+          }
+        done
+        for path in \
+          .venv/bin/python \
+          .venv/bin/pyinstaller \
+          .build/release-tools/ffmpeg-9.0.2.tar.xz \
+          .build/release-tools/lame-4.0.tar.gz \
+          .build/artifacts/sparkle/Sparkle/bin/generate_appcast \
+          Config/Release.json; do
+          [[ -e "$path" ]] || {
+            echo "缺少发行输入：$path" >&2
+            exit 1
+          }
+        done
+        echo "发行前置条件已满足；实际身份、公证和钥匙串可用性由发行脚本验证"
+
+  macos:release:
+    desc: 运行正式 macOS 发行流程，包含测试、签名、公证和本地制品生成，不上传
+    platforms: [darwin]
+    cmds:
+      - task: macos:release:preflight
+      - cmd: bash script/prepare_release.sh
+        env:
+          SIGNING_IDENTITY: '{{.SIGNING_IDENTITY}}'
+          NOTARY_PROFILE: '{{.NOTARY_PROFILE}}'
+          SPARKLE_KEY_ACCOUNT: '{{.SPARKLE_KEY_ACCOUNT}}'
+
+  macos:clean:
+    desc: 清理本项目 dist 和 .build 构建产物，不删除虚拟环境、源码或发行站点
+    platforms: [darwin]
+    cmds:
+      - ./script/clean_build.sh
+
+  macos:ci:
+    desc: 依次执行快速检查、全量测试和构建，不安装、不启动、不发布
+    platforms: [darwin]
+    cmds:
+      - task: macos:check
+      - task: macos:test:all
+      - task: macos:build
+
+  macos-build:
+    desc: 兼容入口：构建 macOS 应用、CLI 和内置媒体工具
+    platforms: [darwin]
+    cmds:
+      - task: macos:build
+
+  macos-install-only:
+    desc: 兼容入口：安装已有 macOS 构建产物，不构建、不启动
+    platforms: [darwin]
+    cmds:
+      - task: macos:install-only
 
   macos-install:
-    desc: Build and install AudioTag for macOS
+    desc: 兼容入口：构建并安装 AudioTag for macOS，不启动
+    platforms: [darwin]
     cmds:
-      - task: macos-build
-      - task: macos-install-only
+      - task: macos:install

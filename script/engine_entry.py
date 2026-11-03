@@ -1,3 +1,3 @@
-from mp3tag.engine import main
+from audiotag.engine import main
 
 main()

@@ -2,8 +2,8 @@
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT"
-IDENTITY="${SIGNING_IDENTITY:-Developer ID Application: zhixin xie (77TN4427T5)}"
-PROFILE="${NOTARY_PROFILE:-samantha-notary}"
+IDENTITY="${SIGNING_IDENTITY:?请设置 SIGNING_IDENTITY，例如你的 Developer ID Application 身份}"
+PROFILE="${NOTARY_PROFILE:?请设置 NOTARY_PROFILE（notarytool 的钥匙串配置名）}"
 WORK="$ROOT/.build/releases/$(date +%Y%m%d-%H%M%S)"
 mkdir -p "$WORK"
 swift test

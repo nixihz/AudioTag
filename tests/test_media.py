@@ -8,9 +8,9 @@ import sys
 from PIL import Image
 import pytest
 
-from mp3tag.engine import perform
-from mp3tag.media import extract_mp3
-from mp3tag.tags import get_cover, load_audio
+from audiotag.engine import perform
+from audiotag.media import extract_mp3
+from audiotag.tags import get_cover, load_audio
 
 
 @pytest.fixture
@@ -59,11 +59,11 @@ def test_custom_cover_overrides_frame_and_audio_only(video):
 
 def test_json_protocol_and_missing_audio(video):
     request = {"operation": "extract", "input": str(video), "output": str(video.with_suffix(".mp3")), "metadata": {"title": "协议标题"}}
-    response = subprocess.run([sys.executable, "-m", "mp3tag.engine", "request"], input=json.dumps(request), text=True, capture_output=True)
+    response = subprocess.run([sys.executable, "-m", "audiotag.engine", "request"], input=json.dumps(request), text=True, capture_output=True)
     assert response.returncode == 0, response.stdout
     result = json.loads(response.stdout)
     assert result["ok"] and result["result"]["metadata"]["title"] == "协议标题"
-    response = subprocess.run([sys.executable, "-m", "mp3tag.engine", "extract", str(video), "--output", request["output"]], capture_output=True, text=True)
+    response = subprocess.run([sys.executable, "-m", "audiotag.engine", "extract", str(video), "--output", request["output"]], capture_output=True, text=True)
     assert response.returncode == 1
     assert json.loads(response.stdout)["ok"] is False
     silent = video.parent / "silent.mp4"
