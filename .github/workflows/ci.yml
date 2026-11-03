@@ -34,13 +34,17 @@ jobs:
   swift:
     name: Swift tests
     # Package.swift 声明 swift-tools-version 6.0.0，需要 Swift 6 工具链。
-    # macos-14 镜像只带 Swift 5.10，包解析阶段即失败；
-    # macos-15 镜像带 Swift 6.1，其 IRGen 在生成 @isolated(any) 闭包擦除 thunk 时
-    # 会触发 "SmallVector unable to grow" 编译器崩溃（上游缺陷，本仓库代码在
-    # Swift 6.2 及以上正常）。因此固定使用 macos-26 镜像。
-    runs-on: macos-26
+    # macos-14 镜像只带 Swift 5.10，包解析阶段即失败。
+    # macos-15 镜像自带 Swift 6.1，其 IRGen 在生成 @isolated(any) 闭包擦除 thunk
+    # 时会触发 "SmallVector unable to grow" 编译器崩溃（上游缺陷）。这里保留
+    # macos-15 的 runner 供给，改由 swiftly 安装更新的编译器。
+    # macos-26 镜像虽然工具链更合适，但公开仓库常因 arm64 容量不足而排队超时。
+    runs-on: macos-15
     steps:
       - uses: actions/checkout@v4
+      - uses: swift-actions/setup-swift@v3
+        with:
+          swift-version: "6.2"
       - name: Show toolchain
         run: swift --version
       - name: Run Swift package tests
