@@ -59,7 +59,7 @@ struct UpdateSettings: View {
                     .buttonStyle(EditorButtonStyle())
                     .disabled(!updater.canCheck)
             }
-            Toggle("自动检查更新", isOn: Binding(get: { updater.automaticallyChecks }, set: updater.setAutomaticallyChecks))
+            Toggle("自动检查更新", isOn: updateToggle)
             Text(updater.status).font(.caption).foregroundStyle(EditorTheme.muted)
             Link("访问官网与版本记录", destination: URL(string: "https://audiotag.xiezhixin.com/")!)
                 .foregroundStyle(EditorTheme.accent)
@@ -72,5 +72,18 @@ struct UpdateSettings: View {
     private var version: String {
         let info = Bundle.main.infoDictionary ?? [:]
         return "\(info["CFBundleShortVersionString"] as? String ?? "开发版")（\(info["CFBundleVersion"] as? String ?? "—")）"
+    }
+
+    /// 开关的读写闭包。
+    ///
+    /// 这里必须写成显式闭包，不能直接传 `updater.setAutomaticallyChecks`：
+    /// 方法引用是对隔离方法的偏应用，Swift 需要为其生成 reabstraction thunk，
+    /// 而在旧版 SwiftUI SDK（`Binding.init(get:set:)` 非隔离）上，Swift 6.1/6.2
+    /// 的编译器会在生成该 thunk 时崩溃。
+    private var updateToggle: Binding<Bool> {
+        Binding(
+            get: { updater.automaticallyChecks },
+            set: { enabled in updater.setAutomaticallyChecks(enabled) }
+        )
     }
 }
